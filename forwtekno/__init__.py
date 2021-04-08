@@ -1,0 +1,49 @@
+import os
+import logging
+import pathlib
+
+logging.basicConfig(level=logging.DEBUG)
+
+formatter = logging.Formatter(
+  '%(asctime)s - [%(levelname)s] - Line №(%(lineno)d) -> %(message)s'
+)
+
+PATH = pathlib.Path(__file__).parent.parent / 'logs' / (__name__ + '.log')
+
+fh = logging.FileHandler(PATH, 'w')
+fh.setFormatter(formatter)
+fh.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+ch.setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+aiogram_logger = logging.getLogger('aiogram')
+aiogram_logger.setLevel(logging.WARNING)
+aiogram_logger.addHandler(ch)
+aiogram_logger.addHandler(fh)
+
+
+ALLOWED_TYPES = ['audio', 'document', 'photo']
+
+try:
+    API_TOKEN = os.environ['API_TOKEN']
+    TO_CHANNEL = os.environ['TO_CHANNEL']
+    FROM_CHANNEL = os.environ['FROM_CHANNEL']
+    TO_CAPTION = os.environ['TO_CAPTION']
+    FROM_CAPTION = os.environ['FROM_CAPTION']
+    HEROKU_APP_NAME = os.environ['APP_NAME']
+    PORT = int(os.environ['PORT'])
+except KeyError as exc:
+    logger.error(f'{ exc } environment variables are missing!')
+    raise SystemExit(1)
+
+WEBHOOK_HOST = f'https://{HEROKU_APP_NAME}.herokuapp.com'
+WEBHOOK_PATH = f'/bot/{API_TOKEN}'
+WEBHOOK_URL = f'{WEBHOOK_HOST}{WEBHOOK_PATH}'
+HOST = '0.0.0.0'
